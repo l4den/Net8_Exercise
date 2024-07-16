@@ -58,8 +58,12 @@ namespace api.Controllers
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if(!await _personRepo.PersonExists(personId)){
+            if(!await _personRepo.PersonExists(personId))
                 return BadRequest("Person does not exist");
+            
+            if(!await _experienceRepo.IsTimeIntervalFreeAsync(personId, experienceDto.StartDate, experienceDto.EndDate))
+            {
+                return BadRequest("Selected time interval is not empty");
             }
 
             var experienceModel = experienceDto.ToExperienceFromCreate(personId);
@@ -75,14 +79,21 @@ namespace api.Controllers
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var experience = await _experienceRepo.UpdateAsync(id, experienceDto.ToExperienceFromUpdate());
-            Console.WriteLine("Experience Company=", experience!.CompanyName);
-            if (experience == null)
+            var experience = await _experienceRepo.GetByIdAsync(id);
+
+            if(experience == null)
             {
                 return NotFound("Experience not found.");
             }
 
-            return Ok(experience.ToExperienceDto());
+            if(!await _experienceRepo.IsTimeIntervalFreeAsync(experience.PersonId, experienceDto.StartDate, experienceDto.EndDate, id))
+            {
+                return BadRequest("Selected time interval is not empty");
+            }
+
+            experience = await _experienceRepo.UpdateAsync(id, experienceDto.ToExperienceFromUpdate());
+
+            return Ok(experience!.ToExperienceDto());
         }
 
         [HttpDelete]
@@ -116,10 +127,10 @@ namespace api.Controllers
             return Ok(experiences);
         }
 
-        [HttpGet("valid-interval/{id:int}")]
-        public async Task<IActionResult> IsTimeIntervalFree([FromRoute] int id, [FromQuery] QueryObject query)
+        [HttpGet("valid-interval/{personId:int}")]
+        public async Task<IActionResult> IsTimeIntervalFree([FromRoute] int personId, [FromQuery] QueryObject query)
         {
-            return Ok(await _experienceRepo.IsTimeIntervalFreeAsync(id, query.StartDate, query.EndDate, query.excludeId));
+            return Ok(await _experienceRepo.IsTimeIntervalFreeAsync(personId, query.StartDate, query.EndDate, query.excludeId));
         }
     }
 }

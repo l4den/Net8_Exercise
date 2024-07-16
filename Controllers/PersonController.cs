@@ -78,6 +78,11 @@ namespace api.Controllers
                 return BadRequest(ModelState);
 
             var personModel = personDto.ToPersonFromCreateDTO();
+
+            if(await _personRepo.EmbgAlreadyExistsAsync(personDto.Embg))
+            {
+                return BadRequest("EMBG already exists");
+            }
             await _personRepo.CreateAsync(personModel);
             return CreatedAtAction(nameof(GetById), new { id = personModel.Id }, personModel.ToPersonDto());
         }
@@ -89,14 +94,15 @@ namespace api.Controllers
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if(!await _personRepo.PersonExists(id))
+                return NotFound("Person does not exist");
+
+            if(await _personRepo.EmbgAlreadyExistsAsync(updateDto.Embg, id))
+                return BadRequest("EMBG already exists");
+
             var personModel = await _personRepo.UpdateAsync(id, updateDto);
 
-            if(personModel == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(personModel.ToPersonDto());
+            return Ok(personModel!.ToPersonDto());
         }
 
         [HttpDelete]
@@ -116,11 +122,6 @@ namespace api.Controllers
             return NoContent();
         }
 
-        [HttpGet("embg/{embg}")]
-        public async Task<bool> EmbgExists([FromRoute] string embg)
-        {
-            return await _personRepo.EmbgExistsAsync(embg);
-        }
 
         [HttpGet("count")]
         public async Task<ActionResult<int>> CountPeople()

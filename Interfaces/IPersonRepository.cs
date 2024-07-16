@@ -16,6 +16,6 @@ namespace api.Interfaces
         Task<Person?> UpdateAsync(int id, UpdatePersonRequestDto personDto);
         Task<Person?> DeleteAsync(int id);
         Task<bool> PersonExists(int id);
-        Task<bool> EmbgExistsAsync(string embg);
+        Task<bool> EmbgAlreadyExistsAsync(string embg, int? excludeId=null);
     }
 }

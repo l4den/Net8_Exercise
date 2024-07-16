@@ -41,9 +41,9 @@ namespace api.Repository
             return personModel;
         }
 
-        public async Task<bool> EmbgExistsAsync(string embg)
+        public async Task<bool> EmbgAlreadyExistsAsync(string embg, int? excludeId = null)
         {
-            return await _context.Person.Where(p => p.Embg == embg).AnyAsync();
+            return await _context.Person.AnyAsync(p => p.Embg == embg && excludeId != p.Id);
         }
 
         public async Task<(List<Person>, int)> GetAllAsync(QueryObject query)
@@ -97,9 +97,9 @@ namespace api.Repository
             return await _context.Person.Include(c => c.Experiences).FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public Task<bool> PersonExists(int id)
+        public async Task<bool> PersonExists(int id)
         {
-            return _context.Person.AnyAsync(s => s.Id == id);
+            return await _context.Person.AnyAsync(s => s.Id == id);
         }
 
         public async Task<Person?> UpdateAsync(int id, UpdatePersonRequestDto personDto)

@@ -13,6 +13,6 @@ namespace api.Dtos.Experience
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         // FK
-        public int? PersonId { get; set; }
+        public int PersonId { get; set; }
     }
 }

@@ -19,6 +19,8 @@ namespace api.Interfaces
 
         Task<List<Experience>?> GetAllByPersonIdAsync(int id);
 
-        Task<bool> IsTimeIntervalFreeAsync(int Id, DateTime startDate, DateTime endDate, int? excludeId);
+        Task<bool> IsTimeIntervalFreeAsync(int Id, DateTime startDate, DateTime endDate, int? excludeId=null);
+
+        Task<bool> ExperienceExists(int id);
     }
 }
